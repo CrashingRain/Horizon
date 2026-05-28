@@ -52,6 +52,12 @@
         "url": "https://lwn.net/headlines/full_text?key=${LWN_KEY}",
         "enabled": false,
         "category": "linux"
+      },
+      {
+        "name": "Sspai",
+        "url": "https://sspai.com/feed",
+        "enabled": true,
+        "category": "tech"
       }
     ],
     "reddit": {
@@ -110,8 +116,8 @@
     }
   },
   "filtering": {
-    "ai_score_threshold": 6.0,
-    "time_window_hours": 24
+    "ai_score_threshold": 1.0,
+    "time_window_hours": 72
   },
   "webhook": {
     "enabled": false,
