@@ -45,10 +45,15 @@ After scoring, items are filtered by `filtering.ai_score_threshold` (default: `7
 {
   "filtering": {
     "ai_score_threshold": 7.0,
-    "time_window_hours": 24
+    "time_window_hours": 24,
+    "max_items_before_ai": 60,
+    "max_important_items": 20
   }
 }
 ```
+
+- `max_items_before_ai` optionally caps deduplicated items sent into the first AI analysis pass.
+- `max_important_items` optionally caps top-scored items kept for enrichment and summary generation.
 
 Items scoring 9.0 or above are featured in the "Today's Highlights" section of the summary.
 

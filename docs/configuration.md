@@ -184,12 +184,19 @@ All sources are configured under the top-level `sources` key in `config.json`.
         "name": "Blog Name",
         "url": "https://example.com/feed.xml",
         "enabled": true,
-        "category": "ai-ml"
+        "category": "ai-ml",
+        "fetch_limit": 5,
+        "include_keywords": ["llm", "agent", "inference"],
+        "exclude_keywords": ["sponsored", "advertisement"]
       }
     ]
   }
 }
 ```
+
+- `fetch_limit`: Maximum matching entries to keep from this feed per run
+- `include_keywords`: Optional case-insensitive keywords; when set, at least one must appear in title/content/tags
+- `exclude_keywords`: Optional case-insensitive keywords that drop matching entries before AI analysis
 
 ### Reddit
 
@@ -361,13 +368,17 @@ Content is scored 0-10:
 {
   "filtering": {
     "ai_score_threshold": 7.0,
-    "time_window_hours": 24
+    "time_window_hours": 24,
+    "max_items_before_ai": 60,
+    "max_important_items": 20
   }
 }
 ```
 
 - `ai_score_threshold`: Only include content scoring >= this value
 - `time_window_hours`: Fetch content from last N hours
+- `max_items_before_ai`: Optional cap on deduplicated items sent to the first AI analysis pass
+- `max_important_items`: Optional cap on top-scored items kept for enrichment and summary generation
 
 ## Environment Variable Substitution
 

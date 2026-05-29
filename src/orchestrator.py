@@ -87,7 +87,8 @@ class HorizonOrchestrator:
                 )
 
             # 4. Analyze with AI
-            analyzed_items = await self._analyze_content(merged_items)
+            items_for_analysis = self._limit_items_for_analysis(merged_items)
+            analyzed_items = await self._analyze_content(items_for_analysis)
             self.console.print(f"🤖 Analyzed {len(analyzed_items)} items with AI\n")
 
             # 5. Filter by score threshold
@@ -110,6 +111,8 @@ class HorizonOrchestrator:
                     f"→ {len(deduped_items)} unique items\n"
                 )
             important_items = deduped_items
+
+            important_items = self._limit_important_items(important_items)
 
             # 5.6 Optional second-stage Twitter reply expansion + targeted re-analysis
             await self._expand_twitter_discussion(important_items)
@@ -224,6 +227,26 @@ class HorizonOrchestrator:
             hours = self.config.filtering.time_window_hours
             since = datetime.now(timezone.utc) - timedelta(hours=hours)
         return since
+
+    def _limit_items_for_analysis(self, items: List[ContentItem]) -> List[ContentItem]:
+        limit = self.config.filtering.max_items_before_ai
+        if not limit or limit <= 0 or len(items) <= limit:
+            return items
+
+        self.console.print(
+            f"[yellow]Limiting AI analysis to first {limit} of {len(items)} items[/yellow]\n"
+        )
+        return items[:limit]
+
+    def _limit_important_items(self, items: List[ContentItem]) -> List[ContentItem]:
+        limit = self.config.filtering.max_important_items
+        if not limit or limit <= 0 or len(items) <= limit:
+            return items
+
+        self.console.print(
+            f"[yellow]Keeping top {limit} important items out of {len(items)}[/yellow]\n"
+        )
+        return items[:limit]
 
     async def fetch_all_sources(self, since: datetime) -> List[ContentItem]:
         """Fetch content from all configured sources.

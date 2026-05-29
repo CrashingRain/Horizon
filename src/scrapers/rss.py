@@ -79,6 +79,9 @@ class RSSScraper(BaseScraper):
             # Parse feed
             feed = feedparser.parse(response.text)
 
+            if source.fetch_limit is not None and source.fetch_limit <= 0:
+                return items
+
             for entry in feed.entries:
                 # Parse published date
                 published_at = self._parse_date(entry)
@@ -93,12 +96,16 @@ class RSSScraper(BaseScraper):
                 ]
 
                 # Extract content
+                title = entry.get("title", "Untitled")
                 content = self._extract_content(entry)
+                tags = [tag.term for tag in entry.get("tags", [])]
+                if not self._matches_source_filters(source, title, content, tags):
+                    continue
 
                 item = ContentItem(
                     id=self._generate_id("rss", feed_id, entry_hash),
                     source_type=SourceType.RSS,
-                    title=entry.get("title", "Untitled"),
+                    title=title,
                     url=entry.get("link", str(source.url)),
                     content=content,
                     author=entry.get("author", source.name),
@@ -106,10 +113,12 @@ class RSSScraper(BaseScraper):
                     metadata={
                         "feed_name": source.name,
                         "category": source.category,
-                        "tags": [tag.term for tag in entry.get("tags", [])],
+                        "tags": tags,
                     },
                 )
                 items.append(item)
+                if source.fetch_limit is not None and len(items) >= source.fetch_limit:
+                    break
 
         except httpx.HTTPError as e:
             logger.warning("Error fetching RSS feed %s: %s", source.name, e)
@@ -143,6 +152,29 @@ class RSSScraper(BaseScraper):
                     continue
 
         return None
+
+    @staticmethod
+    def _matches_source_filters(
+        source: RSSSourceConfig, title: str, content: str, tags: List[str]
+    ) -> bool:
+        """Apply optional source-level keyword filters before AI analysis."""
+        haystack = " ".join([title or "", content or "", " ".join(tags)]).lower()
+        include_keywords = [
+            keyword.strip().lower()
+            for keyword in source.include_keywords
+            if keyword.strip()
+        ]
+        exclude_keywords = [
+            keyword.strip().lower()
+            for keyword in source.exclude_keywords
+            if keyword.strip()
+        ]
+
+        if include_keywords and not any(keyword in haystack for keyword in include_keywords):
+            return False
+        if exclude_keywords and any(keyword in haystack for keyword in exclude_keywords):
+            return False
+        return True
 
     def _extract_content(self, entry: dict) -> str:
         """Extract text content from feed entry.

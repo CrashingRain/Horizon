@@ -96,6 +96,9 @@ class RSSSourceConfig(BaseModel):
     url: HttpUrl
     enabled: bool = True
     category: Optional[str] = None
+    fetch_limit: Optional[int] = None
+    include_keywords: List[str] = Field(default_factory=list)
+    exclude_keywords: List[str] = Field(default_factory=list)
 
 
 class RedditSubredditConfig(BaseModel):
@@ -314,6 +317,8 @@ class FilteringConfig(BaseModel):
 
     ai_score_threshold: float = 7.0
     time_window_hours: int = 24
+    max_items_before_ai: Optional[int] = None
+    max_important_items: Optional[int] = None
 
 
 class Config(BaseModel):
