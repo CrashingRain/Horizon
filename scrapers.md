@@ -81,11 +81,17 @@ Fetches any Atom/RSS feed using the `feedparser` library. Tries multiple date fi
   "name": "Simon Willison",
   "url": "https://simonwillison.net/atom/everything/",
   "enabled": true,
-  "category": "ai-tools"
+  "category": "ai-tools",
+  "fetch_limit": 5,
+  "include_keywords": ["llm", "agent", "inference"],
+  "exclude_keywords": ["sponsored", "advertisement"]
 }
 ```
 
 - `category` — optional tag for grouping (e.g., `"programming"`, `"microblog"`)
+- `fetch_limit` — optional maximum matching entries kept from this feed per run
+- `include_keywords` — optional case-insensitive keywords; when set, at least one must appear in title/content/tags
+- `exclude_keywords` — optional case-insensitive keywords that drop matching entries before AI analysis
 
 **Extracted data**: title, URL, author, content (from `summary`/`description`/`content` fields), feed name, category, and entry tags.
 
